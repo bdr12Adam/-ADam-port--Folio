@@ -1,158 +1,64 @@
-  window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loader').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                }, 500);
-            }, 1500);
-        });
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // Scroll Indicator
-        window.addEventListener('scroll', () => {
-            const scrollIndicator = document.getElementById('scrollIndicator');
-            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrolled = (window.scrollY / scrollHeight) * 100;
-            scrollIndicator.style.width = scrolled + '%';
-        });
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
 
-        // Code Rain Background
-        const codeBg = document.getElementById('codeBg');
-        const codeSnippets = [
-            'const dev = () => {}',
-            'function code() {}',
-            'if (passion) { code(); }',
-            'while (learning) { improve(); }',
-            '{ creativity: true }',
-            '<Component />',
-            'npm install awesome',
-            'git commit -m "success"',
-            'console.log("Hello")',
-            'let innovation = true',
-            '=> { return solution; }',
-            'async function build()',
-            'import { skills }',
-            'export default App',
-        ];
+document.querySelectorAll('.reveal').forEach((element) => observer.observe(element));
 
-        function createCodeRain() {
-            for (let i = 0; i < 15; i++) {
-                setTimeout(() => {
-                    const codeLine = document.createElement('div');
-                    codeLine.className = 'code-line';
-                    codeLine.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
-                    codeLine.style.left = Math.random() * 100 + '%';
-                    codeLine.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                    codeLine.style.animationDelay = Math.random() * 5 + 's';
-                    codeBg.appendChild(codeLine);
+const menuButton = document.querySelector('.menu-toggle');
+const navigation = document.querySelector('.nav-links');
 
-                    setTimeout(() => {
-                        codeLine.remove();
-                    }, 15000);
-                }, i * 1000);
-            }
-        }
+if (menuButton && navigation) {
+  menuButton.addEventListener('click', () => {
+    const isOpen = navigation.classList.toggle('is-open');
+    menuButton.setAttribute('aria-expanded', String(isOpen));
+    menuButton.innerHTML = `<i class="fa-solid fa-${isOpen ? 'xmark' : 'bars'}"></i>`;
+  });
 
-        setInterval(createCodeRain, 15000);
-        createCodeRain();
+  navigation.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+    navigation.classList.remove('is-open');
+    menuButton.setAttribute('aria-expanded', 'false');
+    menuButton.innerHTML = '<i class="fa-solid fa-bars"></i>';
+  }));
+}
 
-        // Particles Animation
-        const particlesContainer = document.getElementById('particles');
-        
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
-            particle.style.animationDelay = Math.random() * 5 + 's';
-            particlesContainer.appendChild(particle);
+if (!reducedMotion) {
+  const portrait = document.querySelector('.portrait-frame');
+  const floatingElements = document.querySelectorAll('.float-on-scroll, .project');
+  let ticking = false;
 
-            setTimeout(() => {
-                particle.remove();
-            }, 20000);
-        }
+  const animateScroll = () => {
+    const scrollY = window.scrollY;
+    document.querySelectorAll('.experience, .projects, #competences, .contact').forEach((section, index) => {
+      const rect = section.getBoundingClientRect();
+      const distance = (rect.top + rect.height / 2 - window.innerHeight / 2) / window.innerHeight;
+      const shift = Math.max(-24, Math.min(24, distance * -30));
+      const tilt = Math.max(-10, Math.min(10, distance * (index % 2 ? 12 : -12)));
+      section.style.setProperty('--scroll-shift', `${shift}px`);
+      section.style.setProperty('--scroll-tilt', `${tilt}deg`);
+    });
+    floatingElements.forEach((element, index) => {
+      const rect = element.getBoundingClientRect();
+      const distance = (rect.top + rect.height / 2 - window.innerHeight / 2) / window.innerHeight;
+      const rotate = Math.max(-4, Math.min(4, distance * (index % 2 ? 5 : -5)));
+      const shift = Math.max(-18, Math.min(18, distance * -22));
+      element.style.transform = `translateY(${shift}px) rotateX(${rotate}deg) rotateY(${-rotate}deg)`;
+    });
+    if (portrait) portrait.style.transform = `rotateY(${-10 + Math.sin(scrollY / 380) * 4}deg) rotateX(${4 + Math.cos(scrollY / 420) * 3}deg)`;
+    ticking = false;
+  };
 
-        for (let i = 0; i < 30; i++) {
-            setTimeout(() => createParticle(), i * 200);
-        }
-
-        setInterval(() => {
-            createParticle();
-        }, 2000);
-
-        // Smooth Scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-
-        // Fade-in Animation on Scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry, index) => {
-                if (entry.isIntersecting) {
-                    setTimeout(() => {
-                        entry.target.classList.add('visible');
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }, index * 100);
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.fade-in').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(50px)';
-            el.style.transition = 'all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-            observer.observe(el);
-        });
-
-        // Navbar Background on Scroll
-        window.addEventListener('scroll', () => {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 50) {
-                navbar.style.background = 'rgba(15, 23, 42, 1)';
-                navbar.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 0 30px rgba(37, 99, 235, 0.3)';
-            } else {
-                navbar.style.background = 'rgba(15, 23, 42, 0.95)';
-                navbar.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(37, 99, 235, 0.1)';
-            }
-        });
-
-        // Parallax Effect
-        window.addEventListener('scroll', () => {
-            const scrolled = window.scrollY;
-            const parallaxElements = document.querySelectorAll('.hero-content');
-            parallaxElements.forEach(el => {
-                const speed = 0.5;
-                el.style.transform = `translateY(${scrolled * speed}px)`;
-            });
-        });
-
-        // Animate Skill Bars
-        const skillObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const progressBars = entry.target.querySelectorAll('.skill-progress');
-                    progressBars.forEach(bar => {
-                        const progress = bar.getAttribute('data-progress');
-                        setTimeout(() => {
-                            bar.style.width = progress + '%';
-                        }, 300);
-                    });
-                    skillObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.3 });
-
-        document.querySelectorAll('.skill-category').forEach(category => {
-            skillObserver.observe(category);
-        });
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(animateScroll);
+      ticking = true;
+    }
+  }, { passive: true });
+  animateScroll();
+}
